@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orb Conversation Usage Viewer</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #34495e;
+        }
+        
+        input[type="text"], input[type="date"], input[type="datetime-local"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        
+        input[type="text"]:focus, input[type="date"]:focus, input[type="datetime-local"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .results {
+            margin-top: 30px;
+        }
+        
+        .summary {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-item {
+            display: inline-block;
+            margin-right: 30px;
+            font-weight: 600;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        .error {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        
+        .conversation-id {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .usage-bar-container {
+            position: relative;
+            height: 20px;
+            width: 200px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
+        .usage-bar {
+            height: 100%;
+            background: #3498db;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .usage-percentage {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 12px;
+            text-shadow: 
+                -1px -1px 0 #000,
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                1px 1px 0 #000,
+                0 0 3px rgba(0,0,0,0.8);
+            z-index: 1;
+        }
+        
+        .metric-selector {
+            margin-bottom: 20px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            box-sizing: border-box;
+        }
+        
+        .copy-btn {
+            background: #27ae60;
+            color: white;
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        
+        .copy-btn:hover {
+            background: #219a52;
+        }
+        
+        .plume-btn {
+            background: #9b59b6;
+            color: white;
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 8px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .plume-btn:hover {
+            background: #8e44ad;
+        }
+        
+        .copy-icon {
+            cursor: pointer;
+            margin-left: 8px;
+            color: #7f8c8d;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        
+        .copy-icon:hover {
+            color: #27ae60;
+        }
+        
+        .tavus-column {
+            background-color: rgba(222, 67, 165, 0.5) !important;
+        }
+        
+        .legend {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        
+        .legend-orb {
+            background-color: white;
+        }
+        
+        .legend-tavus {
+            background-color: rgba(222, 67, 165, 0.5);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 15px;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 25%, rgba(255,255,255,0.3) 25%, rgba(255,255,255,0.3) 50%, transparent 50%, transparent 75%, rgba(255,255,255,0.3) 75%);
+            background-size: 20px 20px;
+            animation: progress-stripes 1s linear infinite;
+        }
+        
+        @keyframes progress-stripes {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 0; }
+        }
+        
+        .subscription-details {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #7f8c8d;
+            line-height: 1.4;
+        }
+        
+        .subscription-details.loading {
+            font-style: italic;
+        }
+        
+        .subscription-details.error {
+            color: #e74c3c;
+        }
+        
+        .subscription-details .detail-row {
+            margin-bottom: 2px;
+        }
+        
+        .subscription-details .detail-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Orb Conversation Usage Viewer</h1>
+        
+        <form id="usageForm">
+            <div class="form-group" style="display: none;">
+                <label for="apiKey">Orb API Key:</label>
+                <input type="password" id="apiKey" placeholder="Enter your Orb API key" required>
+            </div>
+            
+            <div class="form-group" style="display: none;">
+                <label for="tavusApiKey">Tavus API Key:</label>
+                <input type="password" id="tavusApiKey" placeholder="Enter your Tavus API key" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="subscriptionId">Subscription ID:</label>
+                <input type="text" id="subscriptionId" placeholder="e.g., NqfVQmbtbV9AvHjb" required>
+                <div id="subscriptionDetails" class="subscription-details"></div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="startDate">Start Date & Time:</label>
+                    <input type="datetime-local" id="startDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="endDate">End Date & Time:</label>
+                    <input type="datetime-local" id="endDate" required>
+                </div>
+            </div>
+            
+            <div class="form-group metric-selector">
+                <label for="metricId">Billable Metric:</label>
+                <select id="metricId" required>
+                    <option value="">Select a metric...</option>
+                    <option value="3ZfbspMffPDa8kAJ">Conversation Minutes Spent</option>
+                    <option value="dPjwbXu7siZcSMJu">Minutes of video generated</option>
+                    <option value="LwujyXFZsiaS2ivz">Sum of replicas trained</option>
+                    <option value="hJ87TLeGffeuwGkC">Conversation Length Limit</option>
+                </select>
+            </div>
+            
+            <button type="submit" id="submitBtn">Get Conversation Usage</button>
+        </form>
+        
+        <div id="results" class="results" style="display: none;">
+            <div id="summary" class="summary"></div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color legend-orb"></div>
+                    <span>Orb API Data</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color legend-tavus"></div>
+                    <span>Tavus API Data</span>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="usageTable">
+                    <thead>
+                        <tr>
+                            <th>Conversation ID</th>
+                            <th class="tavus-column">Conversation Name</th>
+                            <th class="tavus-column">Replica ID</th>
+                            <th class="tavus-column">Persona ID</th>
+                            <th class="tavus-column">Start DateTime</th>
+                            <th class="tavus-column">End DateTime</th>
+                            <th class="tavus-column">Shutdown Timestamp</th>
+                            <th class="tavus-column">Shutdown Reason</th>
+                            <th>Minutes Billed (Orb)</th>
+                            <th>%</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usageTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="loading" class="loading" style="display: none;">
+            <p id="loadingMessage">Loading conversation usage data...</p>
+            <div id="progressBar" class="progress-bar" style="display: none;">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+        </div>
+        
+        <div id="error" class="error" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Retool Custom Component - Get data from model
+        function getModelValue(key, defaultValue = '') {
+            return (typeof model !== 'undefined' && model && model[key]) ? model[key] : defaultValue;
+        }
+        
+        // Function to get URL parameters
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+        
+        // Global variable to store billing account ID for use in table actions
+        let currentBillingAccountId = null;
+        
+        // Function to fetch subscription details from Orb API
+        async function fetchSubscriptionDetails(subscriptionId) {
+            const apiKey = document.getElementById('apiKey').value;
+            const detailsDiv = document.getElementById('subscriptionDetails');
+            
+            if (!subscriptionId || !apiKey) {
+                detailsDiv.innerHTML = '';
+                return;
+            }
+            
+            // Show loading state
+            detailsDiv.className = 'subscription-details loading';
+            detailsDiv.innerHTML = 'Loading subscription details...';
+            
+            try {
+                const response = await fetch(`https://api.withorb.com/v1/subscriptions/${subscriptionId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Log the raw response for debugging
+                console.log('Raw Orb API Response:', JSON.stringify(data, null, 2));
+                
+                displaySubscriptionDetails(data);
+                
+            } catch (error) {
+                console.error('Error fetching subscription details:', error);
+                detailsDiv.className = 'subscription-details error';
+                detailsDiv.innerHTML = 'Error loading subscription details';
+            }
+        }
+        
+        // Function to display subscription details
+        function displaySubscriptionDetails(data) {
+            const detailsDiv = document.getElementById('subscriptionDetails');
+            detailsDiv.className = 'subscription-details';
+            
+            const customer = data.customer || {};
+            const plan = data.plan || {};
+            
+            // Store billing account ID for use in table actions
+            currentBillingAccountId = customer.metadata?.billing_account_id || null;
+            
+            let html = '';
+            
+            // Customer name
+            if (customer.name) {
+                html += `<div class="detail-row"><span class="detail-label">Customer:</span> ${customer.name}</div>`;
+            }
+            
+            // Customer email
+            if (customer.email) {
+                html += `<div class="detail-row"><span class="detail-label">Email:</span> ${customer.email}</div>`;
+            }
+            
+            // Plan name
+            if (plan.name) {
+                html += `<div class="detail-row"><span class="detail-label">Plan:</span> ${plan.name}</div>`;
+            }
+            
+            // Subscription status
+            if (data.status) {
+                html += `<div class="detail-row"><span class="detail-label">Status:</span> ${data.status}</div>`;
+            }
+            
+            // Check customer metadata for additional info
+            if (customer.metadata) {
+                Object.entries(customer.metadata).forEach(([key, value]) => {
+                    if (key === 'billing_account_id') {
+                        html += `<div class="detail-row"><span class="detail-label">Billing Account ID:</span> ${value}</div>`;
+                    } else if (key === 'user_id') {
+                        html += `<div class="detail-row"><span class="detail-label">User ID:</span> ${value}</div>`;
+                    } else if (key === 'first_name' || key === 'last_name' || key === 'company') {
+                        html += `<div class="detail-row"><span class="detail-label">${key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span> ${value}</div>`;
+                    }
+                });
+            }
+            
+            detailsDiv.innerHTML = html || '<div class="detail-row">No additional details available</div>';
+        }
+        
+        // Set default values - use URL parameters first, then model values, then defaults
+        document.getElementById('startDate').value = getModelValue('startDate', '2025-07-01T00:00');
+        document.getElementById('endDate').value = getModelValue('endDate', new Date().toISOString().split('T')[0] + 'T00:00');
+        
+        // Check for subscription_id in URL parameters first
+        const urlSubscriptionId = getUrlParameter('subscription_id');
+        if (urlSubscriptionId) {
+            document.getElementById('subscriptionId').value = urlSubscriptionId;
+        } else {
+            document.getElementById('subscriptionId').value = getModelValue('subscriptionId', 'NqfVQmbtbV9AvHjb');
+        }
+        
+        document.getElementById('metricId').value = getModelValue('metricId', '3ZfbspMffPDa8kAJ');
+        
+        // Check for API keys in URL parameters first, then fall back to model values
+        const urlOrbApiKey = getUrlParameter('orb_api_key');
+        const urlTavusApiKey = getUrlParameter('tavus_api_key');
+        
+        if (urlOrbApiKey) {
+            document.getElementById('apiKey').value = urlOrbApiKey;
+        } else {
+            const orbApiKey = getModelValue('orbApiKey', '');
+            if (orbApiKey) {
+                document.getElementById('apiKey').value = orbApiKey;
+            }
+        }
+        
+        if (urlTavusApiKey) {
+            document.getElementById('tavusApiKey').value = urlTavusApiKey;
+        } else {
+            const tavusApiKey = getModelValue('tavusApiKey', '');
+            if (tavusApiKey) {
+                document.getElementById('tavusApiKey').value = tavusApiKey;
+            }
+        }
+        
+        // Add event listeners for subscription details fetching
+        const subscriptionIdInput = document.getElementById('subscriptionId');
+        
+        // Debounce function to avoid too many API calls
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Debounced function to fetch subscription details
+        const debouncedFetchSubscriptionDetails = debounce(() => {
+            const subscriptionId = subscriptionIdInput.value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            if (subscriptionId && apiKey) {
+                fetchSubscriptionDetails(subscriptionId);
+            }
+        }, 500);
+        
+        // Add event listener only for subscription ID
+        subscriptionIdInput.addEventListener('input', debouncedFetchSubscriptionDetails);
+        
+        // Initial fetch if both fields are populated
+        const initialSubscriptionId = subscriptionIdInput.value.trim();
+        const initialApiKey = document.getElementById('apiKey').value.trim();
+        if (initialSubscriptionId && initialApiKey) {
+            fetchSubscriptionDetails(initialSubscriptionId);
+        }
+        
+        // Watch for model changes and update form fields
+        if (typeof model !== 'undefined') {
+            const originalModel = JSON.stringify(model);
+            setInterval(() => {
+                if (typeof model !== 'undefined' && JSON.stringify(model) !== originalModel) {
+                    document.getElementById('startDate').value = getModelValue('startDate', document.getElementById('startDate').value);
+                    document.getElementById('endDate').value = getModelValue('endDate', document.getElementById('endDate').value);
+                    
+                    // Only update subscriptionId from model if it wasn't set via URL parameter
+                    if (!urlSubscriptionId) {
+                        const newSubscriptionId = getModelValue('subscriptionId', document.getElementById('subscriptionId').value);
+                        if (newSubscriptionId !== document.getElementById('subscriptionId').value) {
+                            document.getElementById('subscriptionId').value = newSubscriptionId;
+                            // Fetch subscription details when updated via model
+                            const apiKey = document.getElementById('apiKey').value.trim();
+                            if (newSubscriptionId.trim() && apiKey) {
+                                fetchSubscriptionDetails(newSubscriptionId.trim());
+                            }
+                        }
+                    }
+                    
+                                document.getElementById('metricId').value = getModelValue('metricId', document.getElementById('metricId').value);
+            
+            // Only update API keys from model if they weren't set via URL parameters
+            if (!urlOrbApiKey) {
+                const newOrbApiKey = getModelValue('orbApiKey', '');
+                if (newOrbApiKey && newOrbApiKey !== document.getElementById('apiKey').value) {
+                    document.getElementById('apiKey').value = newOrbApiKey;
+                }
+            }
+            if (!urlTavusApiKey) {
+                const newTavusApiKey = getModelValue('tavusApiKey', '');
+                if (newTavusApiKey && newTavusApiKey !== document.getElementById('tavusApiKey').value) {
+                    document.getElementById('tavusApiKey').value = newTavusApiKey;
+                }
+            }
+                }
+            }, 100);
+        }
+
+        document.getElementById('usageForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const apiKey = document.getElementById('apiKey').value;
+            const tavusApiKey = document.getElementById('tavusApiKey').value;
+            const subscriptionId = document.getElementById('subscriptionId').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const metricId = document.getElementById('metricId').value;
+            
+            // Update Retool model with current values
+            if (typeof updateModel === 'function') {
+                updateModel({
+                    lastQuery: {
+                        subscriptionId: subscriptionId,
+                        startDate: startDate,
+                        endDate: endDate,
+                        metricId: metricId,
+                        timestamp: new Date().toISOString()
+                    }
+                });
+            }
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('loadingMessage').textContent = 'Loading conversation usage data...';
+            document.getElementById('progressBar').style.display = 'none';
+            
+            try {
+                const startDateTime = new Date(startDate).toISOString();
+                const endDateTime = new Date(endDate).toISOString();
+                
+                const response = await fetch(`https://api.withorb.com/v1/subscriptions/${subscriptionId}/usage?timeframe_start=${startDateTime}&timeframe_end=${endDateTime}&billable_metric_id=${metricId}&group_by=conversation_id`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                await displayResults(data, startDate, endDate, metricId, tavusApiKey);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('error').textContent = `Error: ${error.message}`;
+                document.getElementById('error').style.display = 'block';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('loadingMessage').textContent = 'Loading conversation usage data...';
+                document.getElementById('progressBar').style.display = 'none';
+                document.getElementById('progressFill').style.width = '0%';
+                document.getElementById('submitBtn').disabled = false;
+            }
+        });
+        
+        async function fetchTavusConversationDetails(conversationId, tavusApiKey) {
+            try {
+                const response = await fetch(`https://tavusapi.com/v2/conversations/${conversationId}?verbose=true`, {
+                    method: 'GET',
+                    headers: {
+                        'x-api-key': tavusApiKey,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    console.warn(`Failed to fetch Tavus data for conversation ${conversationId}: ${response.status}`);
+                    return null;
+                }
+                
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.warn(`Error fetching Tavus data for conversation ${conversationId}:`, error);
+                return null;
+            }
+        }
+        
+        async function displayResults(data, startDate, endDate, metricId, tavusApiKey) {
+            const conversations = data.data || [];
+            const totalMinutes = conversations.reduce((sum, conv) => sum + conv.usage[0].quantity, 0);
+            const maxMinutes = Math.max(...conversations.map(conv => conv.usage[0].quantity));
+            
+            const metricName = document.getElementById('metricId').selectedOptions[0].textContent;
+            
+            // Update summary
+            document.getElementById('summary').innerHTML = `
+                <div class="summary-item">📊 Total Conversations: ${conversations.length}</div>
+                <div class="summary-item">⏱️ Total Minutes: ${totalMinutes.toFixed(1)}</div>
+                <div class="summary-item">📈 Average: ${(totalMinutes / conversations.length).toFixed(1)} min</div>
+                <div class="summary-item">📅 Period: ${startDate} to ${endDate}</div>
+                <div class="summary-item">📋 Metric: ${metricName}</div>
+            `;
+            
+            // Sort conversations by usage initially (will re-sort by date after Tavus data loads)
+            conversations.sort((a, b) => b.usage[0].quantity - a.usage[0].quantity);
+            
+            // Update loading message and show progress bar
+            const loadingMessage = document.getElementById('loadingMessage');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            
+            loadingMessage.textContent = `Loading conversation details... (0/${conversations.length})`;
+            progressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+            
+            // Progress tracking
+            let completedCount = 0;
+            
+            // Update table with loading placeholders
+            const tableBody = document.getElementById('usageTableBody');
+            tableBody.innerHTML = '';
+            
+            // Show basic data first, then enhance with Tavus data
+            conversations.forEach(conv => {
+                const minutes = conv.usage[0].quantity;
+                const percentage = ((minutes / totalMinutes) * 100).toFixed(1);
+                const barWidth = (minutes / maxMinutes) * 200; // 200px max width
+                const conversationId = conv.metric_group.property_value;
+                
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>
+                        <span class="conversation-id">${conversationId}</span>
+                        <span class="copy-icon" onclick="copyToClipboard('${conversationId}')" title="Copy Conversation ID">📋</span>
+                    </td>
+                    <td class="tavus-column" id="name-${conversationId}">Loading...</td>
+                    <td class="tavus-column" id="replica-${conversationId}">Loading...</td>
+                    <td class="tavus-column" id="persona-${conversationId}">Loading...</td>
+                    <td class="tavus-column" id="start-${conversationId}">Loading...</td>
+                    <td class="tavus-column" id="end-${conversationId}">Loading...</td>
+                    <td class="tavus-column" id="shutdown-${conversationId}">Loading...</td>
+                    <td class="tavus-column" id="reason-${conversationId}">Loading...</td>
+                    <td>${minutes.toFixed(1)}</td>
+                    <td>
+                        <div class="usage-bar-container">
+                            <div class="usage-bar" style="width: ${barWidth}px;"></div>
+                            <div class="usage-percentage">${percentage}%</div>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="https://tavus.retool.com/app/company-detail#BillingID=${currentBillingAccountId || ''}&ConversationID=${conversationId}&PersonaID=&Tab=Conversations" target="_blank" class="plume-btn">View in Plume</a>
+                    </td>
+                `;
+            });
+            
+            // Fetch Tavus data for each conversation and collect enhanced data
+            const enhancedConversations = [];
+            
+            const tavusPromises = conversations.map(async (conv) => {
+                const conversationId = conv.metric_group.property_value;
+                const tavusData = await fetchTavusConversationDetails(conversationId, tavusApiKey);
+                
+                // Extract shutdown event data from events array
+                let shutdownTimestamp = null;
+                let shutdownReason = 'N/A';
+                
+                if (tavusData?.events && Array.isArray(tavusData.events)) {
+                    const shutdownEvent = tavusData.events.find(event => event.event_type === 'system.shutdown');
+                    if (shutdownEvent) {
+                        shutdownTimestamp = shutdownEvent.timestamp;
+                        shutdownReason = shutdownEvent.properties?.shutdown_reason || 'N/A';
+                    }
+                }
+                
+                const enhancedConv = {
+                    conversationId: conversationId,
+                    minutes: conv.usage[0].quantity,
+                    percentage: ((conv.usage[0].quantity / totalMinutes) * 100).toFixed(1),
+                    barWidth: (conv.usage[0].quantity / maxMinutes) * 200,
+                    name: tavusData?.conversation_name || 'N/A',
+                    replicaId: tavusData?.replica_id || 'N/A',
+                    personaId: tavusData?.persona_id || 'N/A',
+                    startDateTime: tavusData?.created_at || null,
+                    endDateTime: tavusData?.updated_at || null,
+                    startDateTimeDisplay: tavusData?.created_at ? new Date(tavusData.created_at).toLocaleString() : 'N/A',
+                    endDateTimeDisplay: tavusData?.updated_at ? new Date(tavusData.updated_at).toLocaleString() : 'N/A',
+                    shutdownTimestamp: shutdownTimestamp,
+                    shutdownReason: shutdownReason,
+                    shutdownTimestampDisplay: shutdownTimestamp ? new Date(shutdownTimestamp).toLocaleString() : 'N/A'
+                };
+                
+                if (!tavusData) {
+                    enhancedConv.name = 'Error';
+                    enhancedConv.replicaId = 'Error';
+                    enhancedConv.personaId = 'Error';
+                    enhancedConv.startDateTimeDisplay = 'Error';
+                    enhancedConv.endDateTimeDisplay = 'Error';
+                    enhancedConv.shutdownTimestampDisplay = 'Error';
+                    enhancedConv.shutdownReason = 'Error';
+                }
+                
+                enhancedConversations.push(enhancedConv);
+                
+                // Update progress
+                completedCount++;
+                const progressPercentage = Math.round((completedCount / conversations.length) * 100);
+                loadingMessage.textContent = `Loading conversation details... (${completedCount}/${conversations.length}) - ${progressPercentage}%`;
+                progressFill.style.width = `${progressPercentage}%`;
+                
+                return enhancedConv;
+            });
+            
+            // Wait for all Tavus API calls to complete
+            await Promise.all(tavusPromises);
+            
+            // Sort by start datetime (newest first), fallback to usage if no start time
+            enhancedConversations.sort((a, b) => {
+                if (a.startDateTime && b.startDateTime) {
+                    return new Date(b.startDateTime) - new Date(a.startDateTime);
+                } else if (a.startDateTime && !b.startDateTime) {
+                    return -1;
+                } else if (!a.startDateTime && b.startDateTime) {
+                    return 1;
+                } else {
+                    return b.minutes - a.minutes; // fallback to usage sort
+                }
+            });
+            
+            // Re-render table with sorted data
+            tableBody.innerHTML = '';
+            enhancedConversations.forEach(conv => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>
+                        <span class="conversation-id">${conv.conversationId}</span>
+                        <span class="copy-icon" onclick="copyToClipboard('${conv.conversationId}')" title="Copy Conversation ID">📋</span>
+                    </td>
+                    <td class="tavus-column">${conv.name}</td>
+                    <td class="tavus-column">${conv.replicaId}</td>
+                    <td class="tavus-column">${conv.personaId}</td>
+                    <td class="tavus-column">${conv.startDateTimeDisplay}</td>
+                    <td class="tavus-column">${conv.endDateTimeDisplay}</td>
+                    <td class="tavus-column">${conv.shutdownTimestampDisplay}</td>
+                    <td class="tavus-column">${conv.shutdownReason}</td>
+                    <td>${conv.minutes.toFixed(1)}</td>
+                    <td>
+                        <div class="usage-bar-container">
+                            <div class="usage-bar" style="width: ${conv.barWidth}px;"></div>
+                            <div class="usage-percentage">${conv.percentage}%</div>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="https://tavus.retool.com/app/company-detail#BillingID=${currentBillingAccountId || ''}&ConversationID=${conv.conversationId}&PersonaID=&Tab=Conversations" target="_blank" class="plume-btn">View in Plume</a>
+                    </td>
+                `;
+            });
+            
+            document.getElementById('results').style.display = 'block';
+        }
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                // You could add a toast notification here
+                console.log('Copied to clipboard:', text);
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        }
+    </script>
+</body>
+</html>
