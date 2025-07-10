@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orb Conversation Usage Viewer</title>
+    <title>CVI Orb Billing Breakdown</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -338,7 +338,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔍 Orb Conversation Usage Viewer</h1>
+        <h1>🔍 CVI Orb Billing Breakdown</h1>
         
         <form id="usageForm">
             <div class="form-group" style="display: none;">
@@ -533,15 +533,15 @@
         }
         
         // Set default values - use URL parameters first, then model values, then defaults
-        // Calculate past 7 days: start 7 days ago at 12:00am, end tomorrow at 12:00am
+        // Calculate past 7 days: start 7 days ago at 12:00am UTC, end tomorrow at 12:00am UTC
         const today = new Date();
         const startDate = new Date(today);
-        startDate.setDate(today.getDate() - 7);
-        startDate.setHours(0, 0, 0, 0);
+        startDate.setUTCDate(today.getUTCDate() - 7);
+        startDate.setUTCHours(0, 0, 0, 0);
         
         const endDate = new Date(today);
-        endDate.setDate(today.getDate() + 1);
-        endDate.setHours(0, 0, 0, 0);
+        endDate.setUTCDate(today.getUTCDate() + 1);
+        endDate.setUTCHours(0, 0, 0, 0);
         
         const startDateString = startDate.toISOString().slice(0, 16);
         const endDateString = endDate.toISOString().slice(0, 16);
