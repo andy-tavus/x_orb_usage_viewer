@@ -508,40 +508,42 @@
             currentBillingAccountId = customer.metadata?.billing_account_id || null;
             
             let html = '';
-            
+            const details = [];
+
             // Customer name
             if (customer.name) {
-                html += `<div class="detail-row"><span class="detail-label">Customer:</span> ${customer.name}</div>`;
+                details.push(`Customer: ${customer.name}`);
             }
-            
+
             // Customer email
             if (customer.email) {
-                html += `<div class="detail-row"><span class="detail-label">Email:</span> ${customer.email}</div>`;
+                details.push(`Email: ${customer.email}`);
             }
-            
+
             // Plan name
             if (plan.name) {
-                html += `<div class="detail-row"><span class="detail-label">Plan:</span> ${plan.name}</div>`;
+                details.push(`Plan: ${plan.name}`);
             }
-            
+
             // Subscription status
             if (data.status) {
-                html += `<div class="detail-row"><span class="detail-label">Status:</span> ${data.status}</div>`;
+                details.push(`Status: ${data.status}`);
             }
-            
+
             // Check customer metadata for additional info
             if (customer.metadata) {
                 Object.entries(customer.metadata).forEach(([key, value]) => {
                     if (key === 'billing_account_id') {
-                        html += `<div class="detail-row"><span class="detail-label">Billing Account ID:</span> ${value}</div>`;
+                        details.push(`Billing Account ID: ${value}`);
                     } else if (key === 'user_id') {
-                        html += `<div class="detail-row"><span class="detail-label">User ID:</span> ${value}</div>`;
+                        details.push(`User ID: ${value}`);
                     } else if (key === 'first_name' || key === 'last_name' || key === 'company') {
-                        html += `<div class="detail-row"><span class="detail-label">${key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span> ${value}</div>`;
+                        details.push(`${key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}: ${value}`);
                     }
                 });
             }
-            
+
+            html = details.join(' | ');
             detailsDiv.innerHTML = html || '<div class="detail-row">No additional details available</div>';
         }
         
