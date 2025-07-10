@@ -353,7 +353,7 @@
             
             <div class="form-group">
                 <label for="subscriptionId">Subscription ID:</label>
-                <input type="text" id="subscriptionId" placeholder="e.g., NqfVQmbtbV9AvHjb" required>
+                <input type="text" id="subscriptionId" placeholder="e.g., abc123xyz789" required>
                 <div id="subscriptionDetails" class="subscription-details"></div>
             </div>
             
@@ -533,15 +533,28 @@
         }
         
         // Set default values - use URL parameters first, then model values, then defaults
-        document.getElementById('startDate').value = getModelValue('startDate', '2025-07-01T00:00');
-        document.getElementById('endDate').value = getModelValue('endDate', new Date().toISOString().split('T')[0] + 'T00:00');
+        // Calculate past 7 days: start 7 days ago at 12:00am, end tomorrow at 12:00am
+        const today = new Date();
+        const startDate = new Date(today);
+        startDate.setDate(today.getDate() - 7);
+        startDate.setHours(0, 0, 0, 0);
+        
+        const endDate = new Date(today);
+        endDate.setDate(today.getDate() + 1);
+        endDate.setHours(0, 0, 0, 0);
+        
+        const startDateString = startDate.toISOString().slice(0, 16);
+        const endDateString = endDate.toISOString().slice(0, 16);
+        
+        document.getElementById('startDate').value = getModelValue('startDate', startDateString);
+        document.getElementById('endDate').value = getModelValue('endDate', endDateString);
         
         // Check for subscription_id in URL parameters first
         const urlSubscriptionId = getUrlParameter('subscription_id');
         if (urlSubscriptionId) {
             document.getElementById('subscriptionId').value = urlSubscriptionId;
         } else {
-            document.getElementById('subscriptionId').value = getModelValue('subscriptionId', 'NqfVQmbtbV9AvHjb');
+            document.getElementById('subscriptionId').value = getModelValue('subscriptionId', '');
         }
         
         document.getElementById('metricId').value = getModelValue('metricId', '3ZfbspMffPDa8kAJ');
