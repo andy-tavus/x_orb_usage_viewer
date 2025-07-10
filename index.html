@@ -383,16 +383,21 @@
             
             <div class="form-group metric-selector">
                 <label for="metricId">Billable Metric:</label>
-                <select id="metricId" required>
-                    <option value="">Select a metric...</option>
-                    <option value="3ZfbspMffPDa8kAJ">Conversation Minutes Spent</option>
-                    <option value="dPjwbXu7siZcSMJu">Minutes of video generated</option>
-                    <option value="LwujyXFZsiaS2ivz">Sum of replicas trained</option>
-                    <option value="hJ87TLeGffeuwGkC">Conversation Length Limit</option>
-                </select>
+                <div class="form-row">
+                    <div class="form-group" style="flex: 2;">
+                        <select id="metricId" required>
+                            <option value="">Select a metric...</option>
+                            <option value="3ZfbspMffPDa8kAJ">Conversation Minutes Spent</option>
+                            <option value="dPjwbXu7siZcSMJu">Minutes of video generated</option>
+                            <option value="LwujyXFZsiaS2ivz">Sum of replicas trained</option>
+                            <option value="hJ87TLeGffeuwGkC">Conversation Length Limit</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <button type="submit" id="submitBtn">Get Usage</button>
+                    </div>
+                </div>
             </div>
-            
-            <button type="submit" id="submitBtn">Get Conversation Usage</button>
         </form>
         
         <div id="results" class="results" style="display: none;">
